@@ -44,11 +44,12 @@ class Image(object):
 		if (x not in range(0, self.width)) or (y not in range (0, self.height)):
 			raise ValueError("Trying to set a pixel outside of the image bounds.")
 
-		index = y * self.width + x
+		index = (self.height - y - 1) * self.width + x
 		self.buffer[index] = color
 
 	def saveAsPNG(self, filename = "render.png"):
 		""" Pack a new buffer formatted as a PNG, then save it to a file."""
+		print("Saving PNG...")
 
 		# First, create a binary string containing the image's raw color data
 		data = b''
