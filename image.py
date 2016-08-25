@@ -35,30 +35,29 @@ class Image(object):
 		""" Create the buffer, fill it with black pixels."""
 		self.width = width
 		self.height = height
-		self.buffer = []
-		for i in range(0, width * height):
-			self.buffer.append(Color(0, 0, 0, 255))
+
+		# Each row consists of two null bytes followed by colors for each pixel
+		row = bytearray(1) + bytearray([0, 0, 0, 255] * width)
+		self.buffer = row * height
 
 	def setPixel(self, x, y, color):
 		""" Set the color value for the pixel at (x, y)."""
 		if (x not in range(0, self.width)) or (y not in range (0, self.height)):
 			raise ValueError("Trying to set a pixel outside of the image bounds.")
 
-		index = (self.height - y - 1) * self.width + x
-		self.buffer[index] = color
+		# Flip Y coordinate so that up is positive
+		flipY = (self.height - y - 1)
+		index = (flipY * self.width + x) * 4 + flipY
+
+		# Set the new pixel colors in the buffer
+		self.buffer[index + 1] = color.getTuple()[0]
+		self.buffer[index + 2] = color.getTuple()[1]
+		self.buffer[index + 3] = color.getTuple()[2]
+		self.buffer[index + 4] = color.getTuple()[3]
 
 	def saveAsPNG(self, filename = "render.png"):
 		""" Pack a new buffer formatted as a PNG, then save it to a file."""
 		print("Saving PNG...")
-
-		# First, create a binary string containing the image's raw color data
-		data = b''
-		for i in range(0, self.width*self.height):
-			# Append null bytes at the beginning of rows
-			if (i % self.width == 0):
-				data += b'\x00'
-
-			data += self.buffer[i].getByteString()
 
 		def makeChunk(chunkType, chunkData):
 			""" Pack data into standard PNG chunks. Chunks consist of:
@@ -82,7 +81,7 @@ class Image(object):
 		# Start with the universal PNG signature identifying the file as a PNG, then append chunks
 		packedData = b'\x89PNG\r\n\x1a\n' +	\
 					 makeChunk(b'IHDR', struct.pack(">2I5B", self.width, self.height, 8, 6, 0, 0, 0)) + \
-					 makeChunk(b'IDAT', zlib.compress(data, 9)) + \
+					 makeChunk(b'IDAT', zlib.compress(self.buffer, 9)) + \
 					 makeChunk(b'IEND', b'')
 
 		png = open(filename, 'wb')
