@@ -14,6 +14,18 @@ class Color(object):
 	def __init__(self, r, g, b, a):
 		self.color = (r, g, b, a)
 
+	def r(self):
+		return self.color[0]
+
+	def g(self):
+		return self.color[1]
+
+	def b(self):
+		return self.color[2]
+
+	def a(self):
+		return self.color[3]
+
 	def getTuple(self):
 		return self.color
 
@@ -24,6 +36,15 @@ class Color(object):
 		""" Pack the color as a C-style byte string."""
 		return struct.pack('>4B', self.color[0], self.color[1], self.color[2], self.color[3])
 
+	def getAlphaBlend(self, destColor):
+		""" Alpha blend this color with the provided destination color."""
+		alpha = self.a() / 255
+		outR = int(self.r() * alpha) + int(destColor.r() * (1 - alpha))
+		outG = int(self.g() * alpha) + int(destColor.g() * (1 - alpha))
+		outB = int(self.b() * alpha) + int(destColor.b() * (1 - alpha))
+		outA = self.a() + int(destColor.a() * (1-alpha))
+		return Color(outR, outG, outB, outA)
+
 class Image(object):
 	""" An image class capable of generating and saving a PNG.
 		Attributes:
@@ -31,13 +52,13 @@ class Image(object):
 			height: The height of the image
 			buffer: Representation of the image storing Color values for each pixel
 	"""
-	def __init__(self, width, height):
+	def __init__(self, width, height, color = Color(0, 0, 0, 255)):
 		""" Create the buffer, fill it with black pixels."""
 		self.width = width
 		self.height = height
 
-		# Each row consists of two null bytes followed by colors for each pixel
-		row = bytearray(1) + bytearray([0, 0, 0, 255] * width)
+		# Each row consists of a null byte followed by colors for each pixel
+		row = bytearray(1) + bytearray([color.r(), color.g(), color.b(), color.a()] * width)
 		self.buffer = row * height
 
 	def setPixel(self, x, y, color):
@@ -49,11 +70,14 @@ class Image(object):
 		flipY = (self.height - y - 1)
 		index = (flipY * self.width + x) * 4 + flipY
 
+		# Get the existing destination color
+		destColor = Color(*tuple(self.buffer[index + 1 : index + 5]))
+
+		# Blend the new color with the destination color
+		outColor = color.getAlphaBlend(destColor)
+
 		# Set the new pixel colors in the buffer
-		self.buffer[index + 1] = color.getTuple()[0]
-		self.buffer[index + 2] = color.getTuple()[1]
-		self.buffer[index + 3] = color.getTuple()[2]
-		self.buffer[index + 4] = color.getTuple()[3]
+		self.buffer[index + 1 : index + 5] = outColor.getTuple()
 
 	def saveAsPNG(self, filename = "render.png"):
 		""" Pack a new buffer formatted as a PNG, then save it to a file."""
