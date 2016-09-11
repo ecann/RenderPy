@@ -1,4 +1,14 @@
 """ Module for drawing geometric primitives.
+	Example Line:
+		p0 = Point(10, 10, Color(255, 0, 0, 255))
+		p1 = Point(20, 20, Color(0, 0, 255, 255))
+		Line(image, p0, p1).draw()
+
+	Example triangle:
+		p0 = Point(10, 10, Color(255, 0, 0, 255))
+		p1 = Point(290, 50, Color(0, 0, 255, 255))
+		p2 = Point(200, 280, Color(0, 255, 0, 255))
+		Triangle(image, p0, p1, p2).draw()
 """
 
 from image import Image, Color
@@ -19,8 +29,7 @@ class Line(object):
 	""" A 2D line with color interpolated from endpoints.
 		Attributes:
 			image: The image to draw on
-			p0: The 2D Point at the beginning of the line (with associated color)
-			p1: The Point at the end of the line
+			p0, p1: The endpoints of the line (with associated colors)
 	"""
 	def __init__(self, image, p0, p1):
 		self.image = image
@@ -91,3 +100,67 @@ class Line(object):
 				self.image.setPixel(x, y + 1, Color(color.r(), color.g(), color.b(), int(color.a() * fpart(yLine))))
 
 			yLine += m
+
+class Triangle(object):
+	""" A triangle with color interpolated from endpoints.
+		Attributes:
+			image: The image to draw on
+			p0, p1, p2: The points of the triangle (with associated colors)
+	"""
+	def __init__(self, image, p0, p1, p2):
+		self.image = image
+		self.p0 = p0
+		self.p1 = p1
+		self.p2 = p2
+
+	def edge_function(self, p0, p1, p2):
+		''' Calculates the signed area of the triangle (p0, p1, p2).
+			The sign of the value tells which side of the line p0p1 that p2 lies.
+			Defined as the cross product of <p2-p0> and <p1-p0>
+		'''
+		return (p2.x - p0.x) * (p1.y - p0.y) - (p2.y - p0.y) * (p1.x - p0.x)
+
+	def contains_point(self, point):
+		''' Calculates the barycentric coordinates of the given point.
+			Returns true if the point is inside this triangle,
+			along with the color of that point calculated by interpolating the color
+			of the triangle's vertices with the barycentric coordintes.
+		'''
+		area = self.edge_function(self.p0, self.p1, self.p2)
+		w0 =  self.edge_function(self.p1, self.p2, point)
+		w1 = self.edge_function(self.p2, self.p0, point)
+		w2 = self.edge_function(self.p0, self.p1, point)
+
+		# Barycentric coordinates are calculated as the areas of the three sub-triangles divided
+		# by the area of the whole triangle.
+		alpha = w0 / area
+		beta = w1 / area
+		gamma = w2 / area
+
+		# This point lies inside the triangle if w0, w1, and w2 are all positive
+		if (alpha >= 0 and beta >= 0 and gamma >= 0):
+			# Interpolate the color of this point using the barycentric values
+			red = int(alpha*self.p0.color.r() + beta*self.p1.color.r() + gamma*self.p2.color.r())
+			green = int(alpha*self.p0.color.g() + beta*self.p1.color.g() + gamma*self.p2.color.g())
+			blue = int(alpha*self.p0.color.b() + beta*self.p1.color.b() + gamma*self.p2.color.b())
+			alpha = int(alpha*self.p0.color.a() + beta*self.p1.color.a() + gamma*self.p2.color.a())
+
+			return True, Color(red, green, blue, alpha)
+
+		else:
+			return False, None
+
+	def draw(self):
+		# First calculate a bounding box for this triangle so we don't have to iterate over the entire image
+		xmin = min(self.p0.x, self.p1.x, self.p2.x)
+		xmax = max(self.p0.x, self.p1.x, self.p2.x)
+		ymin = min(self.p0.y, self.p1.y, self.p2.y)
+		ymax = max(self.p0.y, self.p1.y, self.p2.y)
+
+		# Iterate over all pixels in the bounding box, test if they lie inside in the triangle
+		# If they do, set that pixel with the barycentric color of that point
+		for x in range(xmin, xmax + 1):
+			for y in range(ymin, ymax + 1):
+				point_in_triangle, color = self.contains_point(Point(x, y, None))
+				if point_in_triangle:
+					self.image.setPixel(x, y, color)
