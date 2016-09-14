@@ -64,7 +64,7 @@ class Image(object):
 	def setPixel(self, x, y, color):
 		""" Set the color value for the pixel at (x, y)."""
 		if (x not in range(0, self.width)) or (y not in range (0, self.height)):
-			raise ValueError("Trying to set a pixel outside of the image bounds.")
+			return
 
 		# Flip Y coordinate so that up is positive
 		flipY = (self.height - y - 1)

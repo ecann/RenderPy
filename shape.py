@@ -1,4 +1,4 @@
-""" Module for drawing geometric primitives.
+""" Module for drawing geometric primitives, using only the Python standard library.
 	Example Line:
 		p0 = Point(10, 10, Color(255, 0, 0, 255))
 		p1 = Point(20, 20, Color(0, 0, 255, 255))
@@ -130,6 +130,8 @@ class Triangle(object):
 		w0 =  self.edge_function(self.p1, self.p2, point)
 		w1 = self.edge_function(self.p2, self.p0, point)
 		w2 = self.edge_function(self.p0, self.p1, point)
+
+		if area == 0: return False, None
 
 		# Barycentric coordinates are calculated as the areas of the three sub-triangles divided
 		# by the area of the whole triangle.
