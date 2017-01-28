@@ -1,5 +1,6 @@
 # RenderPy
 A software renderer written from scratch in Python 3, using only modules from the Python Standard Library.
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/cow.png)
 
 ## To Run
 ```python 
@@ -19,8 +20,18 @@ Class with functions for reading a `.obj` file into a stored model, retrieving v
 Implements the rendering pipeline. Loads a model, transforms vertices, computes shading, rasterizes faces into triangles, and outputs the final image to a PNG.
 
 ## Milestones
-12/24/16 – Simple n\*l shading
-9/13/16 – Load model from .obj file, rasterize and render with triangles
-9/11/16 – Draw triangles
-8/27/16 – Draw lines with Wu's Algorithm
-8/19/16 – Image module wrapping a color buffer, PNG writer
+**12/24/16** – Simple n\*l shading
+
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/cow.png)
+
+**9/13/16** – Load model from .obj file, rasterize and render with triangles
+
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/discocow.png)
+
+**9/11/16** – Draw triangles
+
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/triangle.png)
+
+**8/27/16** – Draw lines with Wu's Algorithm
+
+**8/19/16** – Image module wrapping a color buffer, PNG writer
