@@ -27,7 +27,9 @@ for face in model.faces:
 	v0 = [i - j for i, j in zip(p2, p0)]
 	v1 = [i - j for i, j in zip(p1, p0)]
 	normal = [(v0[1]*v1[2] - v0[2]*v1[1]), (v0[2]*v1[0] - v0[0]*v1[2]), (v0[0]*v1[1] - v0[1]*v1[0])]
-	normal = [i/(abs(normal[0]) + abs(normal[1]) + abs(normal[2])) for i in normal] # Normalize
+
+	if abs(normal[0]) + abs(normal[1]) + abs(normal[2]) != 0:
+		normal = [i/(abs(normal[0]) + abs(normal[1]) + abs(normal[2])) for i in normal] # Normalize
 
 	lightDir = [0, 0, -1]
 	intensity = normal[0]*lightDir[0] + normal[1]*lightDir[1] + normal[2]*lightDir[2]
