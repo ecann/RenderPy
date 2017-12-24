@@ -1,6 +1,6 @@
 # RenderPy
 A software renderer written from scratch in Python 3, using only modules from the Python Standard Library.
-![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/cow.png)
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/smoothcow.png)
 
 ## To Run
 ```python 
@@ -20,7 +20,11 @@ Class with functions for reading a `.obj` file into a stored model, retrieving v
 Implements the rendering pipeline. Loads a model, transforms vertices, computes shading, rasterizes faces into triangles, and outputs the final image to a PNG.
 
 ## Milestones
-**12/24/16** – Simple n\*l shading
+**12/23/17 (1 year later 😛)** – Smooth shading using vertex normals
+
+![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/smoothcow.png)
+
+**12/24/16** – Simple n\*l flat shading
 
 ![cow](https://raw.githubusercontent.com/ecann/RenderPy/master/images/cow.png)
 
