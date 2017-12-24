@@ -69,7 +69,7 @@ class Vector(object):
             product = tuple(comp * other for comp in self)
             return Vector(*product)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, numbers.Real):
             value = tuple(comp / other for comp in self)
             return Vector(*value)

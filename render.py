@@ -8,7 +8,7 @@ height = 300
 image = Image(width, height, Color(255, 255, 255, 255))
 
 # Load the model
-model = Model('data/cow.obj')
+model = Model('data/teapot.obj')
 model.normalizeGeometry()
 
 def getOrthographicProjection(x, y, z):
@@ -19,28 +19,58 @@ def getOrthographicProjection(x, y, z):
 
 	return screenX, screenY
 
+def getVertexNormal(vertIndex, faceNormalsByVertex):
+	# Compute vertex normals by averaging the normals of adjacent faces
+	normal = Vector(0, 0, 0)
+	for adjNormal in faceNormalsByVertex[vertIndex]:
+		normal = normal + adjNormal
+
+	return normal / len(faceNormalsByVertex[vertIndex])
+
+# Calculate face normals
+faceNormals = {}
 for face in model.faces:
 	p0, p1, p2 = [model.vertices[i] for i in face]
+	faceNormal = (p2-p0).cross(p1-p0).normalize()
 
-	# Calculate the normal vector of this face and use it to calculate simple shading
-	# Shading intensity is the scalar product of the light vector and the normal to the face
-	# (p2-p0) x (p1-p0)
-	normal = (p2-p0).cross(p1-p0).normalize()
+	for i in face:
+		if not i in faceNormals:
+			faceNormals[i] = []
 
+		faceNormals[i].append(faceNormal)
 
+# Calculate vertex normals
+vertexNormals = []
+for vertIndex in range(len(model.vertices)):
+	vertNorm = getVertexNormal(vertIndex, faceNormals)
+	vertexNormals.append(vertNorm)
+
+# Render the image iterating through faces
+for face in model.faces:
+	p0, p1, p2 = [model.vertices[i] for i in face]
+	n0, n1, n2 = [vertexNormals[i] for i in face]
+
+	# Define the light direction
 	lightDir = Vector(0, 0, -1)
-	intensity = normal * lightDir
 
-	# Intensity < 0 means light is shining through the back of the face
-	# In this case, don't draw the face at all ("back-face culling")
-	if intensity < 0:
-		continue
+	# Set to true if face should be culled
+	cull = False
 
+	# Transform vertices and calculate lighting intensity per vertex
 	transformedPoints = []
-	for p in [p0, p1, p2]:
+	for p, n in zip([p0, p1, p2], [n0, n1, n2]):
+		intensity = n * lightDir
+
+		# Intensity < 0 means light is shining through the back of the face
+		# In this case, don't draw the face at all ("back-face culling")
+		if intensity < 0:
+			cull = True
+			break
+
 		screenX, screenY = getOrthographicProjection(p.x, p.y, p.z)
 		transformedPoints.append(Point(screenX, screenY, Color(intensity*255, intensity*255, intensity*255, 255)))
 
-	Triangle(image, transformedPoints[0], transformedPoints[1], transformedPoints[2]).draw()
+	if not cull:
+		Triangle(image, transformedPoints[0], transformedPoints[1], transformedPoints[2]).draw()
 
-image.saveAsPNG("cow.png")
+image.saveAsPNG("image.png")
