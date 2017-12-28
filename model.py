@@ -24,12 +24,13 @@ class Model(object):
 
 			# Faces
 			elif segments[0] == 'f':
-				face = []
-				for s in segments[1:]:
-					coords = s.split('/')
-					face.append(int(coords[0])-1)
-
-				self.faces.append(face)
+				# Support models that have faces with more than 3 points
+				# Parse the face as a triangle fan
+				for i in range(2, len(segments)-1):
+					corner1 = int(segments[1].split('/')[0])-1
+					corner2 = int(segments[i].split('/')[0])-1
+					corner3 = int(segments[i+1].split('/')[0])-1
+					self.faces.append([corner1, corner2, corner3])
 
 	def normalizeGeometry(self):
 		maxCoords = [0, 0, 0]
