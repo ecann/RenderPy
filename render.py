@@ -7,8 +7,11 @@ width = 500
 height = 300
 image = Image(width, height, Color(255, 255, 255, 255))
 
+# Init z-buffer
+zBuffer = [-float('inf')] * width * height
+
 # Load the model
-model = Model('data/teapot.obj')
+model = Model('data/cow.obj')
 model.normalizeGeometry()
 
 def getOrthographicProjection(x, y, z):
@@ -68,9 +71,9 @@ for face in model.faces:
 			break
 
 		screenX, screenY = getOrthographicProjection(p.x, p.y, p.z)
-		transformedPoints.append(Point(screenX, screenY, Color(intensity*255, intensity*255, intensity*255, 255)))
+		transformedPoints.append(Point(screenX, screenY, p.z, Color(intensity*255, intensity*255, intensity*255, 255)))
 
 	if not cull:
-		Triangle(image, transformedPoints[0], transformedPoints[1], transformedPoints[2]).draw()
+		Triangle(transformedPoints[0], transformedPoints[1], transformedPoints[2]).draw(image, zBuffer)
 
 image.saveAsPNG("image.png")
